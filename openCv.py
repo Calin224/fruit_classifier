@@ -9,7 +9,7 @@ import os
 import streamlit as st
 import urllib.request
 
-MODEL_URL = "https://huggingface.co/Calin224/fruit_classifier/resolve/main/resnet18_100x100.pth?download=true"
+MODEL_URL = "https://huggingface.co/Calin224/fruit_classifier/resolve/main/resnet18_100x100.pth"
 MODEL_PATH = "models/resnet18_100x100.pth"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
