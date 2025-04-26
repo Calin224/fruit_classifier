@@ -14,25 +14,7 @@ MODEL_PATH = "models/resnet18_100x100.pth"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-weights = None
-model = torchvision.models.resnet18(weights=weights)
-
-model.fc = nn.Sequential(
-    nn.Linear(in_features=512, out_features=194)
-).to(device)
-
-if not os.path.exists(MODEL_PATH):
-    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    with st.spinner("Downloading model from HuggingFace..."):
-        urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
-        st.success("Model downloaded successfully!")
-
-model.load_state_dict(torch.load(MODEL_PATH, map_location=device), strict=False)
-
-model.to(device)
-model.eval()
-
-class_names = ['Apple 10', 'Apple 11', 'Apple 12', 'Apple 13', 'Apple 14', 'Apple 17', 'Apple 18', 'Apple 19',
+class_names = ['Apple 9', 'Apple 11', 'Apple 12', 'Apple 13', 'Apple 14', 'Apple 17', 'Apple 18', 'Apple 19',
                'Apple 5', 'Apple 6', 'Apple 7', 'Apple 8', 'Apple 9', 'Apple Braeburn 1', 'Apple Core 1',
                'Apple Crimson Snow 1', 'Apple Golden 1', 'Apple Golden 2', 'Apple Golden 3', 'Apple Granny Smith 1',
                'Apple Pink Lady 1', 'Apple Red 1', 'Apple Red 2', 'Apple Red 3', 'Apple Red Delicious 1',
@@ -64,6 +46,25 @@ class_names = ['Apple 10', 'Apple 11', 'Apple 12', 'Apple 13', 'Apple 14', 'Appl
                'Tomato Cherry Maroon 1', 'Tomato Cherry Orange 1', 'Tomato Cherry Red 1', 'Tomato Cherry Red 2',
                'Tomato Cherry Yellow 1', 'Tomato Heart 1', 'Tomato Maroon 1', 'Tomato Maroon 2', 'Tomato Yellow 1',
                'Tomato not Ripened 1', 'Walnut 1', 'Watermelon 1', 'Zucchini 1', 'Zucchini dark 1']
+
+weights = None
+model = torchvision.models.efficientnet_b2(weights=weights).to(device)
+
+model.classifier = nn.Sequential(
+    nn.Dropout(p=0.2, inplace=True),
+    nn.Linear(in_features=1408, out_features=len(class_names), bias=True).to(device)
+)
+
+if not os.path.exists(MODEL_PATH):
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    with st.spinner("Downloading model from HuggingFace..."):
+        urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+        st.success("Model downloaded successfully!")
+
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device), strict=False)
+
+model.to(device)
+model.eval()
 
 def pred_image(model: torch.nn.Module,
                img: Image.Image,
