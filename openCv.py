@@ -7,59 +7,63 @@ from torchvision import transforms
 import os
 # import cv2
 import streamlit as st
+import urllib.request
+
+MODEL_URL = "https://huggingface.co/Calin224/fruit_classifier/resolve/main/resnet18_100x100.pth?download=true"
+MODEL_PATH = "models/resnet18_100x100.pth"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-weights = torchvision.models.ResNet18_Weights.DEFAULT
+weights = None
 model = torchvision.models.resnet18(weights=weights)
 
 model.fc = nn.Sequential(
     nn.Linear(in_features=512, out_features=194)
-)
+).to(device)
 
-model.load_state_dict(torch.load("models/resnet18_100x100.pth", map_location=device))
+if not os.path.exists(MODEL_PATH):
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    with st.spinner("Downloading model from HuggingFace..."):
+        urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+        st.success("Model downloaded successfully!")
+
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device), strict=False)
 
 model.to(device)
 model.eval()
 
-class_names_local = sorted(next(os.walk("data/Training"))[1])
-
-class_names = [x for x in class_names_local]
-
-# transform = transforms.Compose([
-#     transforms.Resize((100, 100)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.485, 0.456, 0.406],
-#                          std=[0.229, 0.224, 0.225])
-# ])
-
-# cap = cv2.VideoCapture(0)
-
-# while True:
-#     ret, frame = cap.read()
-#     if not ret:
-#         break
-#
-#     img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_YCrCb2RGB))
-#     img_tensor = transform(img).unsqueeze(0).to(device)
-#
-#     with torch.inference_mode():
-#         pred = model(img_tensor)
-#         probs = torch.softmax(pred, dim=1)
-#         pred_class = torch.argmax(probs, dim=1)
-#         label = class_names[pred_class]
-#         confidence = probs[0][pred_class].item()
-#
-#     cv2.putText(frame, f"{label} ({confidence:.2f})", (10, 40),
-#                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-#
-#     cv2.imshow("Live Fruit Detection", frame)
-#
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#         break
-#
-# cap.release()
-# cv2.destroyAllWindows()
+class_names = ['Apple 10', 'Apple 11', 'Apple 12', 'Apple 13', 'Apple 14', 'Apple 17', 'Apple 18', 'Apple 19',
+               'Apple 5', 'Apple 6', 'Apple 7', 'Apple 8', 'Apple 9', 'Apple Braeburn 1', 'Apple Core 1',
+               'Apple Crimson Snow 1', 'Apple Golden 1', 'Apple Golden 2', 'Apple Golden 3', 'Apple Granny Smith 1',
+               'Apple Pink Lady 1', 'Apple Red 1', 'Apple Red 2', 'Apple Red 3', 'Apple Red Delicious 1',
+               'Apple Red Yellow 1', 'Apple Red Yellow 2', 'Apple Rotten 1', 'Apple hit 1', 'Apple worm 1', 'Apricot 1',
+               'Avocado 1', 'Avocado ripe 1', 'Banana 1', 'Banana 3', 'Banana Lady Finger 1', 'Banana Red 1', 'Beans 1',
+               'Beetroot 1', 'Blackberrie 1', 'Blackberrie 2', 'Blackberrie half rippen 1', 'Blackberrie not rippen 1',
+               'Blueberry 1', 'Cabbage red 1', 'Cabbage white 1', 'Cactus fruit 1', 'Cactus fruit green 1',
+               'Cactus fruit red 1', 'Caju seed 1', 'Cantaloupe 1', 'Cantaloupe 2', 'Carambula 1', 'Carrot 1',
+               'Cauliflower 1', 'Cherimoya 1', 'Cherry 1', 'Cherry 2', 'Cherry 3', 'Cherry 4', 'Cherry 5',
+               'Cherry Rainier 1', 'Cherry Rainier 2', 'Cherry Rainier 3', 'Cherry Sour 1', 'Cherry Wax Black 1',
+               'Cherry Wax Red 1', 'Cherry Wax Red 2', 'Cherry Wax Red 3', 'Cherry Wax Yellow 1',
+               'Cherry Wax not ripen 1', 'Cherry Wax not ripen 2', 'Chestnut 1', 'Clementine 1', 'Cocos 1', 'Corn 1',
+               'Corn Husk 1', 'Cucumber 1', 'Cucumber 10', 'Cucumber 3', 'Cucumber 9', 'Cucumber Ripe 1',
+               'Cucumber Ripe 2', 'Dates 1', 'Eggplant 1', 'Eggplant long 1', 'Fig 1', 'Ginger Root 1', 'Gooseberry 1',
+               'Granadilla 1', 'Grape Blue 1', 'Grape Pink 1', 'Grape White 1', 'Grape White 2', 'Grape White 3',
+               'Grape White 4', 'Grapefruit Pink 1', 'Grapefruit White 1', 'Guava 1', 'Hazelnut 1', 'Huckleberry 1',
+               'Kaki 1', 'Kiwi 1', 'Kohlrabi 1', 'Kumquats 1', 'Lemon 1', 'Lemon Meyer 1', 'Limes 1', 'Lychee 1',
+               'Mandarine 1', 'Mango 1', 'Mango Red 1', 'Mangostan 1', 'Maracuja 1', 'Melon Piel de Sapo 1',
+               'Mulberry 1', 'Nectarine 1', 'Nectarine Flat 1', 'Nut Forest 1', 'Nut Pecan 1', 'Onion Red 1',
+               'Onion Red Peeled 1', 'Onion White 1', 'Orange 1', 'Papaya 1', 'Passion Fruit 1', 'Peach 1', 'Peach 2',
+               'Peach Flat 1', 'Pear 1', 'Pear 2', 'Pear 3', 'Pear Abate 1', 'Pear Forelle 1', 'Pear Kaiser 1',
+               'Pear Monster 1', 'Pear Red 1', 'Pear Stone 1', 'Pear Williams 1', 'Pepino 1', 'Pepper Green 1',
+               'Pepper Orange 1', 'Pepper Red 1', 'Pepper Yellow 1', 'Physalis 1', 'Physalis with Husk 1',
+               'Pineapple 1', 'Pineapple Mini 1', 'Pistachio 1', 'Pitahaya Red 1', 'Plum 1', 'Plum 2', 'Plum 3',
+               'Pomegranate 1', 'Pomelo Sweetie 1', 'Potato Red 1', 'Potato Red Washed 1', 'Potato Sweet 1',
+               'Potato White 1', 'Quince 1', 'Quince 2', 'Quince 3', 'Quince 4', 'Rambutan 1', 'Raspberry 1',
+               'Redcurrant 1', 'Salak 1', 'Strawberry 1', 'Strawberry Wedge 1', 'Tamarillo 1', 'Tangelo 1', 'Tomato 1',
+               'Tomato 10', 'Tomato 2', 'Tomato 3', 'Tomato 4', 'Tomato 5', 'Tomato 7', 'Tomato 8', 'Tomato 9',
+               'Tomato Cherry Maroon 1', 'Tomato Cherry Orange 1', 'Tomato Cherry Red 1', 'Tomato Cherry Red 2',
+               'Tomato Cherry Yellow 1', 'Tomato Heart 1', 'Tomato Maroon 1', 'Tomato Maroon 2', 'Tomato Yellow 1',
+               'Tomato not Ripened 1', 'Walnut 1', 'Watermelon 1', 'Zucchini 1', 'Zucchini dark 1']
 
 def pred_image(model: torch.nn.Module,
                img: Image.Image,
@@ -67,7 +71,6 @@ def pred_image(model: torch.nn.Module,
                image_size: Tuple[int, int] = (100, 100),
                transform: transforms.Compose = None,
                device: torch.device = device):
-
     if transform is not None:
         img_transform = transform
     else:
@@ -88,6 +91,7 @@ def pred_image(model: torch.nn.Module,
         pred_class = torch.argmax(probs, dim=1)
 
     return class_names[pred_class.item()]
+
 
 st.title("Fruit Classification")
 st.write("Upload an image of a fruit and see what it is!")
