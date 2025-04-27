@@ -1,4 +1,8 @@
-torch
-torchvision
-pillow
-streamlit
+torch~=2.6.0+cu126
+torchvision~=0.21.0+cu126
+pillow~=11.0.0
+streamlit~=1.44.1
+tqdm~=4.67.1
+matplotlib~=3.10.1
+accelerate~=1.6.0
+torchinfo~=1.8.0
